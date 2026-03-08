@@ -1,1 +1,10 @@
-<p>invoice works!</p>
+<app-customer-details
+    (customerData)="getCustomer($event)">
+</app-customer-details>
+
+<app-product-details
+    (productData)="getProducts($event)">
+</app-product-details>
+<h1>Press Generate PDF</h1>
+
+<button (click)="generatePdf()">Generate PDF</button>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Output } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTable } from '@angular/material/table';
 import { ViewChild } from '@angular/core';
+import { OutletContext } from '@angular/router';
 
 @Component({
   selector: 'app-product-details',
@@ -28,6 +29,7 @@ import { ViewChild } from '@angular/core';
 })
 export class ProductDetailsComponent  implements AfterViewInit{
 
+  @Output() productData = new EventEmitter<any>();
   // Columns for mat-table
   displayedColumns: string[] = ['sno', 'productName', 'quantity', 'amount', 'total_amount', 'action'];
 
@@ -82,6 +84,7 @@ export class ProductDetailsComponent  implements AfterViewInit{
   // Submit
   onSubmit(): void {
     if (this.productForm.valid) {
+      this.productData.emit(this.productForm.value);
       console.log('Form Value:', this.productForm.value);
     } else {
       this.productForm.markAllAsTouched();

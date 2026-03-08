@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-customer-details',
@@ -11,7 +12,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 })
 export class CustomerDetailsComponent {
   customerForm : FormGroup;
-  constructor( private formBuilder: FormBuilder) {
+  @Output() customerData = new EventEmitter<any>();
+  constructor( private formBuilder: FormBuilder, private router: Router) {
      this.customerForm = this.formBuilder.group({
       customerName:['',Validators.required],
       customerAddress:['',Validators.required],
@@ -20,10 +22,12 @@ export class CustomerDetailsComponent {
       customerStateCode:['',[Validators.required, Validators.pattern('^[0-9]{2}$')]]
     });
   }
-  onSubmit()
+ onSubmit()
   {
     if(this.customerForm.valid)
     {
+      this.customerData.emit(this.customerForm.value);
+        this.router.navigate(['/invoice']);
       console.log(this.customerForm.valid);
       alert("Hiii , Sir.")
     }
