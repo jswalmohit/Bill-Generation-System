@@ -44,5 +44,9 @@ export class InvoiceComponent {
     console.log("Customer:", this.customerDetails);
     console.log("Products:", this.productDetails);
   }
+
+  printInvoice() {
+    window.print();
+  }
 }
 
