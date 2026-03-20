@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, EventEmitter, Output } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, ValueChangeEvent } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTable } from '@angular/material/table';
 import { ViewChild } from '@angular/core';
-import { OutletContext } from '@angular/router';
+import { OutletContext, Router } from '@angular/router';
+import { InvoiceDataService } from '../../services/invoice-data.service';
 
 @Component({
   selector: 'app-product-details',
@@ -27,10 +28,9 @@ import { OutletContext } from '@angular/router';
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.css'
 })
-export class ProductDetailsComponent  implements AfterViewInit{
+export class ProductDetailsComponent {
 
-  @Output() productData = new EventEmitter<any>();
-  // Columns for mat-table
+// Columns for mat-table
   displayedColumns: string[] = ['sno', 'productName', 'quantity', 'amount', 'total_amount', 'action'];
 
   // Dropdown Data
@@ -39,7 +39,7 @@ export class ProductDetailsComponent  implements AfterViewInit{
   @ViewChild(MatTable) table!: MatTable<any>;
   productForm: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private invoiceService: InvoiceDataService,  private router: Router) {
 
     this.productForm = this.fb.group({
       products: this.fb.array([])
@@ -48,9 +48,7 @@ export class ProductDetailsComponent  implements AfterViewInit{
     // Add first row automatically
     // this.addProduct();
   }
-  ngAfterViewInit(): void {
-    throw new Error('Method not implemented.');
-  }
+ 
 
   // Getter for FormArray
   get products(): FormArray {
@@ -59,7 +57,6 @@ export class ProductDetailsComponent  implements AfterViewInit{
 
   // Add new row
   addProduct(): void {
-    console.log("dkmcdknckdnkd");
     const productGroup = this.fb.group({
       productName: ['', Validators.required],
       quantity: ['', Validators.required],
@@ -67,10 +64,27 @@ export class ProductDetailsComponent  implements AfterViewInit{
       total_amount:['', Validators.required]
     });
 
-    // this.products.push(productGroup);
+    productGroup.get('quantity')?.valueChanges.subscribe(() => {
+      this.calculate(productGroup)
+    });
+    productGroup.get('amount')?.valueChanges.subscribe(() => {
+      this.calculate(productGroup)
+    });
+    this.products.push(productGroup);
       this.table.renderRows();
   }
 
+    calculate(group : FormGroup)
+    {
+      const  qty = group.get('quantity')?.value;
+      const  amt = group.get('amount')?.value;
+      if(qty && amt)
+      {
+        const total_amt = qty * amt;
+        group.get('total_amount')?.setValue(total_amt, { emitEvent: false});
+      }
+
+    }
   // Remove row
   removeProduct(index: number): void {
     this.products.removeAt(index);
@@ -84,10 +98,13 @@ export class ProductDetailsComponent  implements AfterViewInit{
   // Submit
   onSubmit(): void {
     if (this.productForm.valid) {
-      this.productData.emit(this.productForm.value);
+      // this.productData.emit(this.productForm.valid);
+       this.invoiceService.setProducts(this.productForm.value.products);
+       this.router.navigate(['/invoice']);
+      
       console.log('Form Value:', this.productForm.value);
     } else {
       this.productForm.markAllAsTouched();
     }
-  } 
+  }
 }
